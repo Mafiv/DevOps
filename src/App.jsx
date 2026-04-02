@@ -1,64 +1,116 @@
 import { useState } from 'react'
 import './App.css'
-import HealthCheck from './components/HealthCheck'
-import ErrorBoundary from './components/ErrorBoundary'
 
 function App() {
-  const [clicked, setClicked] = useState(false)
-  const [logs, setLogs] = useState([])
+  const [counter, setCounter] = useState(0)
+  const [isSubscribed, setIsSubscribed] = useState(false)
 
-  const addLog = (message) => {
-    const timestamp = new Date().toISOString()
-    setLogs(prev => [...prev.slice(-4), { timestamp, message }])
+  const incrementCounter = () => {
+    setCounter(prev => prev + 1)
   }
 
-  const handleButtonClick = () => {
-    const newState = !clicked
-    setClicked(newState)
-    addLog(`Button ${newState ? 'clicked' : 'reset'} - CI/CD pipeline ${newState ? 'triggered' : 'reset'} 🚀`)
+  const handleSubscribe = () => {
+    setIsSubscribed(!isSubscribed)
   }
 
   return (
-    <ErrorBoundary>
-      <div className="app">
-        <header className="app-header">
-          <h1>{import.meta.env.VITE_APP_NAME || 'DevOps Demo'}</h1>
-          <p className="version">Version: {import.meta.env.VITE_APP_VERSION || '1.0.0'}</p>
-        </header>
-        
-        <main className="main-content">
-          <section className="demo-section">
-            <h2>Interactive Demo</h2>
-            <p className="status-text">
-              {clicked ? 'Button clicked! CI/CD pipeline is running 🚀' : 'Click the button to trigger a demo action'}
-            </p>
-            <button className="demo-btn" onClick={handleButtonClick}>
-              {clicked ? 'Reset' : 'Run Demo'}
-            </button>
-          </section>
-
-          <section className="monitoring-section">
-            <HealthCheck />
-          </section>
-
-          <section className="logs-section">
-            <h3>Activity Logs</h3>
-            <div className="logs">
-              {logs.length === 0 ? (
-                <p>No activity yet...</p>
-              ) : (
-                logs.map((log, index) => (
-                  <div key={index} className="log-entry">
-                    <span className="log-time">{new Date(log.timestamp).toLocaleTimeString()}</span>
-                    <span className="log-message">{log.message}</span>
-                  </div>
-                ))
-              )}
+    <div className="app">
+      {/* Header */}
+      <header className="header">
+        <div className="container">
+          <nav className="nav">
+            <div className="logo">DevOps Demo</div>
+            <div className="nav-links">
+              <a href="#features">Features</a>
+              <a href="#about">About</a>
+              <a href="#contact">Contact</a>
             </div>
-          </section>
-        </main>
-      </div>
-    </ErrorBoundary>
+          </nav>
+        </div>
+      </header>
+
+      {/* Hero Section */}
+      <section className="hero">
+        <div className="container">
+          <div className="hero-content">
+            <h1 className="hero-title">
+              Build Faster with 
+              <span className="gradient-text"> Modern DevOps</span>
+            </h1>
+            <p className="hero-description">
+              Experience the power of automated CI/CD pipelines, 
+              real-time testing, and seamless deployments.
+            </p>
+            <div className="hero-actions">
+              <button className="btn btn-primary" onClick={incrementCounter}>
+                � Get Started ({counter})
+              </button>
+              <button 
+                className={`btn ${isSubscribed ? 'btn-subscribed' : 'btn-secondary'}`}
+                onClick={handleSubscribe}
+              >
+                {isSubscribed ? '✅ Subscribed!' : '📧 Subscribe'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="features" id="features">
+        <div className="container">
+          <h2 className="section-title">Why Choose This Demo?</h2>
+          <div className="features-grid">
+            <div className="feature-card">
+              <div className="feature-icon">⚡</div>
+              <h3>Lightning Fast</h3>
+              <p>Optimized build process with modern tooling for rapid development cycles.</p>
+            </div>
+            <div className="feature-card">
+              <div className="feature-icon">🛡️</div>
+              <h3>Always Tested</h3>
+              <p>Automated testing ensures code quality and prevents regressions.</p>
+            </div>
+            <div className="feature-card">
+              <div className="feature-icon">🚀</div>
+              <h3>Auto Deploy</h3>
+              <p>Seamless deployments to Vercel with every successful merge.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="stats">
+        <div className="container">
+          <div className="stats-grid">
+            <div className="stat-item">
+              <div className="stat-number">{counter}</div>
+              <div className="stat-label">Interactions</div>
+            </div>
+            <div className="stat-item">
+              <div className="stat-number">100%</div>
+              <div className="stat-label">Test Coverage</div>
+            </div>
+            <div className="stat-item">
+              <div className="stat-number">3</div>
+              <div className="stat-label">Deploy Steps</div>
+            </div>
+            <div className="stat-item">
+              <div className="stat-number">{isSubscribed ? '1' : '0'}</div>
+              <div className="stat-label">Subscribers</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="footer">
+        <div className="container">
+          <p>&copy; 2024 DevOps Demo. Built with React, deployed via Vercel.</p>
+        </div>
+      </footer>
+    </div>
   )
 }
 
