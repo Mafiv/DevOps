@@ -21,6 +21,11 @@ export default defineConfig(({ mode }) => {
       port: 8080,
       host: true,
     },
+    base: mode === 'production' ? '/DevOps/' : '/',
+    build: {
+      outDir: 'dist',
+      assetsDir: 'assets',
+    },
   }
 
   // Environment-specific configuration
