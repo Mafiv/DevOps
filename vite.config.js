@@ -11,7 +11,7 @@ export default defineConfig(({ mode }) => {
       globals: true,
     },
     define: {
-      __APP_VERSION__: JSON.stringify(process.env.npm_package_version),
+      __APP_VERSION__: JSON.stringify(process?.env?.npm_package_version || '1.0.0'),
     },
     server: {
       port: 3000,
