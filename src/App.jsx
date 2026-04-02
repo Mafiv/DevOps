@@ -34,7 +34,7 @@ function App() {
         <div className="container">
           <div className="hero-content">
             <h1 className="hero-title">
-              Build Faster with 
+              Ship Faster with 
               <span className="gradient-text"> Modern DevOps</span>
             </h1>
             <p className="hero-description">
