@@ -23,7 +23,7 @@ function App() {
             <div className="nav-links">
               <a href="#features">Features</a>
               <a href="#about">About</a>
-              <a href="#contact">Contact</a>
+              <a href="#contact">Contact us</a>
             </div>
           </nav>
         </div>
@@ -34,7 +34,7 @@ function App() {
         <div className="container">
           <div className="hero-content">
             <h1 className="hero-title">
-              Ship Faster with 
+              Build Faster with 
               <span className="gradient-text"> Modern DevOps</span>
             </h1>
             <p className="hero-description">
