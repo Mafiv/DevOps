@@ -10,7 +10,16 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "docker:build": "docker build -t devops-demo .",
+    "docker:run": "docker run -p 8080:80 devops-demo",
+    "docker:dev": "docker-compose -f docker-compose.dev.yml up --build",
+    "docker:prod": "docker-compose up --build",
+    "docker:down": "docker-compose down",
+    "ssl:generate": "./scripts/generate-ssl.sh",
+    "security:audit": "npm audit",
+    "security:scan": "npm audit --audit-level=high"
   },
   "dependencies": {
     "react": "^19.2.4",
