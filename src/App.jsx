@@ -25,7 +25,6 @@ function App() {
               <a href="#about">About</a>
               <a href="#contact">Contact</a>
               <a href="#pricing">Pricing</a>
-              <a href="#future">future</a>
             </div>
           </nav>
         </div>
