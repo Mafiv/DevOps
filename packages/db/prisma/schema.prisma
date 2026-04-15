@@ -1,0 +1,126 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  role      Role     @default(DEVELOPER)
+  avatarUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  projects    Project[]
+  deployments Deployment[]
+  auditLogs   AuditLog[]
+
+  @@map("users")
+}
+
+model Project {
+  id          String        @id @default(cuid())
+  name        String
+  slug        String        @unique
+  description String?
+  repoUrl     String?
+  status      ProjectStatus @default(ACTIVE)
+  ownerId     String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  owner     User       @relation(fields: [ownerId], references: [id])
+  pipelines Pipeline[]
+
+  @@map("projects")
+}
+
+model Pipeline {
+  id        String         @id @default(cuid())
+  name      String
+  branch    String         @default("main")
+  status    PipelineStatus @default(PENDING)
+  projectId String
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  duration  Int?           // seconds
+
+  project     Project      @relation(fields: [projectId], references: [id])
+  deployments Deployment[]
+
+  @@map("pipelines")
+}
+
+model Deployment {
+  id         String           @id @default(cuid())
+  env        Environment      @default(PRODUCTION)
+  status     DeploymentStatus @default(PENDING)
+  url        String?
+  commitSha  String
+  commitMsg  String
+  pipelineId String
+  deployedBy String
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  pipeline User       @relation(fields: [deployedBy], references: [id])
+  deployer Pipeline   @relation(fields: [pipelineId], references: [id])
+
+  @@map("deployments")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  action    String
+  entity    String
+  entityId  String
+  meta      String?  // JSON blob
+  userId    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("audit_logs")
+}
+
+enum Role {
+  ADMIN
+  DEVELOPER
+  VIEWER
+}
+
+enum ProjectStatus {
+  ACTIVE
+  ARCHIVED
+  MAINTENANCE
+}
+
+enum PipelineStatus {
+  PENDING
+  RUNNING
+  SUCCESS
+  FAILED
+  CANCELLED
+}
+
+enum DeploymentStatus {
+  PENDING
+  IN_PROGRESS
+  SUCCESS
+  FAILED
+  ROLLED_BACK
+}
+
+enum Environment {
+  DEVELOPMENT
+  STAGING
+  PRODUCTION
+}
