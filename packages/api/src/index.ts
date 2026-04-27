@@ -5,6 +5,8 @@ import { logger } from "hono/logger";
 import { prettyJSON } from "hono/pretty-json";
 import { healthRouter } from "./routes/health.js";
 import { projectsRouter } from "./routes/projects.js";
+import { pipelinesRouter } from "./routes/pipelines.js";
+import { deploymentsRouter } from "./routes/deployments.js";
 
 const app = new Hono();
 
@@ -22,6 +24,8 @@ app.use(
 // ── Routes ──────────────────────────────────────────────────────────────────
 app.route("/health", healthRouter);
 app.route("/api/projects", projectsRouter);
+app.route("/api/pipelines", pipelinesRouter);
+app.route("/api/deployments", deploymentsRouter);
 
 // ── 404 ────────────────────────────────────────────────────────────────────
 app.notFound((c) => c.json({ error: "Not found" }, 404));
