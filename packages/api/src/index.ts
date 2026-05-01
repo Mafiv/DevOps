@@ -7,6 +7,8 @@ import { healthRouter } from "./routes/health.js";
 import { projectsRouter } from "./routes/projects.js";
 import { pipelinesRouter } from "./routes/pipelines.js";
 import { deploymentsRouter } from "./routes/deployments.js";
+import { syncRouter } from "./routes/sync.js";
+import { webhooksRouter } from "./routes/webhooks.js";
 
 const app = new Hono();
 
@@ -26,6 +28,8 @@ app.route("/health", healthRouter);
 app.route("/api/projects", projectsRouter);
 app.route("/api/pipelines", pipelinesRouter);
 app.route("/api/deployments", deploymentsRouter);
+app.route("/sync", syncRouter);
+app.route("/webhooks", webhooksRouter);
 
 // ── 404 ────────────────────────────────────────────────────────────────────
 app.notFound((c) => c.json({ error: "Not found" }, 404));
