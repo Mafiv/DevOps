@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 const links = [
   { href: "/", label: "Dashboard" },
@@ -12,6 +13,20 @@ const links = [
 
 export function Nav() {
   const pathname = usePathname();
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const userStr = localStorage.getItem("user");
+    if (userStr) setUser(JSON.parse(userStr));
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setUser(null);
+    window.location.href = "/login";
+  };
+
   return (
     <nav className="nav">
       <Link href="/" className="nav-brand">
@@ -32,6 +47,23 @@ export function Nav() {
             {label}
           </Link>
         ))}
+        {user ? (
+          <>
+            <span style={{ color: "var(--text-secondary)", fontSize: "0.875rem" }}>{user.name}</span>
+            <button onClick={handleLogout} style={{ background: "none", border: "none", color: "var(--text-primary)", cursor: "pointer", fontSize: "0.875rem" }}>
+              Logout
+            </button>
+          </>
+        ) : (
+          <>
+            <Link href="/login" className={["nav-link", pathname === "/login" ? "active" : ""].join(" ")}>
+              Login
+            </Link>
+            <Link href="/register" className={["nav-link", pathname === "/register" ? "active" : ""].join(" ")}>
+              Register
+            </Link>
+          </>
+        )}
       </div>
     </nav>
   );

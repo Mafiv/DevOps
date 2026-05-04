@@ -1,0 +1,16 @@
+{
+  "buildCommand": "pnpm turbo build --filter=web",
+  "outputDirectory": "apps/web/.next",
+  "devCommand": "pnpm turbo dev --filter=web",
+  "installCommand": "pnpm install",
+  "framework": "nextjs",
+  "regions": ["iad1"],
+  "env": {
+    "DATABASE_URL": "@database_url",
+    "GITHUB_TOKEN": "@github_token",
+    "VERCEL_TOKEN": "@vercel_token",
+    "WEBHOOK_SECRET": "@webhook_secret",
+    "JWT_SECRET": "@jwt_secret",
+    "API_URL": "@api_url"
+  }
+}
