@@ -7,18 +7,30 @@ export const deploymentsRouter = new Hono();
 deploymentsRouter.get("/", async (c) => {
   const env = c.req.query("env");
   const pipelineId = c.req.query("pipelineId");
-  const deployments = await prisma.deployment.findMany({
-    where: {
-      ...(env ? { env: env as never } : {}),
-      ...(pipelineId ? { pipelineId } : {}),
-    },
-    include: {
-      pipeline: { select: { id: true, name: true } },
-      deployer: { select: { id: true, name: true, avatarUrl: true } },
-    },
-    orderBy: { createdAt: "desc" },
-  });
-  return c.json({ data: deployments, total: deployments.length });
+  const page = parseInt(c.req.query("page") || "1");
+  const limit = parseInt(c.req.query("limit") || "10");
+  const skip = (page - 1) * limit;
+
+  const where = {
+    ...(env ? { env: env as never } : {}),
+    ...(pipelineId ? { pipelineId } : {}),
+  };
+
+  const [deployments, total] = await Promise.all([
+    prisma.deployment.findMany({
+      where,
+      include: {
+        pipeline: { select: { id: true, name: true } },
+        deployer: { select: { id: true, name: true, avatarUrl: true } },
+      },
+      orderBy: { createdAt: "desc" },
+      skip,
+      take: limit,
+    }),
+    prisma.deployment.count({ where }),
+  ]);
+
+  return c.json({ data: deployments, total, page, limit, totalPages: Math.ceil(total / limit) });
 });
 
 // GET /api/deployments/:id

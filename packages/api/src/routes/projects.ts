@@ -5,11 +5,21 @@ export const projectsRouter = new Hono();
 
 // GET /api/projects
 projectsRouter.get("/", async (c) => {
-  const projects = await prisma.project.findMany({
-    include: { owner: { select: { id: true, name: true, email: true, avatarUrl: true } }, _count: { select: { pipelines: true } } },
-    orderBy: { createdAt: "desc" },
-  });
-  return c.json({ data: projects, total: projects.length });
+  const page = parseInt(c.req.query("page") || "1");
+  const limit = parseInt(c.req.query("limit") || "10");
+  const skip = (page - 1) * limit;
+
+  const [projects, total] = await Promise.all([
+    prisma.project.findMany({
+      include: { owner: { select: { id: true, name: true, email: true, avatarUrl: true } }, _count: { select: { pipelines: true } } },
+      orderBy: { createdAt: "desc" },
+      skip,
+      take: limit,
+    }),
+    prisma.project.count(),
+  ]);
+
+  return c.json({ data: projects, total, page, limit, totalPages: Math.ceil(total / limit) });
 });
 
 // GET /api/projects/:id

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SyncButton } from "./components/SyncButton";
 
 const API_URL = process.env.API_URL || "http://localhost:3001";
 
@@ -82,13 +83,18 @@ export default async function DashboardPage() {
     <>
       {/* Hero */}
       <div className="hero">
-        <div className="page-title hero-title">
-          Welcome to <span>DevOps/mono</span>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1rem" }}>
+          <div>
+            <div className="page-title hero-title">
+              Welcome to <span>DevOps/mono</span>
+            </div>
+            <p className="hero-sub">
+              A Turborepo monorepo showcasing modern CI/CD — separate backend, database,
+              UI component library, and web dashboard all in one repo.
+            </p>
+          </div>
+          <SyncButton />
         </div>
-        <p className="hero-sub">
-          A Turborepo monorepo showcasing modern CI/CD — separate backend, database,
-          UI component library, and web dashboard all in one repo.
-        </p>
         <div className="pipeline-steps">
           {["📦 Install", "🔍 Lint", "✅ Test", "🏗️ Build", "🚀 Deploy"].map((s, i, arr) => (
             <div className="step-wrapper" key={s} style={{ display: "inline-flex", alignItems: "center" }}>

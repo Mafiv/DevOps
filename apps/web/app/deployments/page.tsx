@@ -1,10 +1,6 @@
-const deployments = [
-  { id: "1", env: "PRODUCTION", status: "SUCCESS", project: "Storefront", commitSha: "a1b2c3d", commitMsg: "feat: add checkout flow with stripe integration", deployedBy: { name: "Alice Chen", initials: "AC" }, url: "https://storefront.devops-mono.io", date: "2026-04-28" },
-  { id: "2", env: "STAGING", status: "IN_PROGRESS", project: "Storefront", commitSha: "d4e5f6a", commitMsg: "feat: persistent cart with redis", deployedBy: { name: "Bob Müller", initials: "BM" }, url: "https://storefront-staging.devops-mono.io", date: "2026-04-28" },
-  { id: "3", env: "PRODUCTION", status: "FAILED", project: "API Gateway", commitSha: "b7c8d9e", commitMsg: "fix: rate limiter sliding window edge case", deployedBy: { name: "Bob Müller", initials: "BM" }, url: null, date: "2026-04-27" },
-  { id: "4", env: "PRODUCTION", status: "SUCCESS", project: "Admin Dashboard", commitSha: "c1d2e3f", commitMsg: "fix: sidebar nav collapse on mobile", deployedBy: { name: "Alice Chen", initials: "AC" }, url: "https://admin.devops-mono.io", date: "2026-04-27" },
-  { id: "5", env: "PRODUCTION", status: "SUCCESS", project: "API Gateway", commitSha: "f4a5b6c", commitMsg: "perf: connection pool tuning", deployedBy: { name: "Bob Müller", initials: "BM" }, url: "https://api.devops-mono.io", date: "2026-04-25" },
-];
+import { SyncButton } from "./components/SyncButton";
+
+const API_URL = process.env.API_URL || "http://localhost:3001";
 
 const statusClass: Record<string, string> = {
   SUCCESS: "badge-success",
@@ -21,15 +17,52 @@ const envClass: Record<string, string> = {
   DEVELOPMENT: "badge-default",
 };
 
-export default function DeploymentsPage() {
-  const successes = deployments.filter((d) => d.status === "SUCCESS").length;
-  const failures  = deployments.filter((d) => d.status === "FAILED").length;
+function getInitials(name: string): string {
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+}
+
+function timeAgo(date: string): string {
+  const diff = Date.now() - new Date(date).getTime();
+  const minutes = Math.floor(diff / 60000);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+  if (days > 0) return `${days}d ago`;
+  if (hours > 0) return `${hours}h ago`;
+  if (minutes > 0) return `${minutes}m ago`;
+  return "Just now";
+}
+
+async function fetchDeployments() {
+  try {
+    const res = await fetch(`${API_URL}/api/deployments`, { cache: "no-store" });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.data || [];
+  } catch {
+    return [];
+  }
+}
+
+export default async function DeploymentsPage() {
+  const deployments = await fetchDeployments();
+  const successes = deployments.filter((d: any) => d.status === "SUCCESS").length;
+  const failures = deployments.filter((d: any) => d.status === "FAILED").length;
 
   return (
     <>
       <div className="page-header">
-        <div className="page-title">Deployments</div>
-        <div className="page-subtitle">All environment deployments across the monorepo</div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <div>
+            <div className="page-title">Deployments</div>
+            <div className="page-subtitle">All environment deployments across the monorepo</div>
+          </div>
+          <SyncButton />
+        </div>
       </div>
 
       {/* Quick stats */}
@@ -50,54 +83,60 @@ export default function DeploymentsPage() {
 
       <div className="section">
         <div className="table-card">
-          <table>
-            <thead>
-              <tr>
-                <th>Commit</th>
-                <th>Project</th>
-                <th>Env</th>
-                <th>Status</th>
-                <th>Deployed By</th>
-                <th>URL</th>
-                <th>Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {deployments.map((d) => (
-                <tr key={d.id}>
-                  <td>
-                    <div style={{ fontWeight: 500, fontSize: "0.82rem" }}>{d.commitMsg}</div>
-                    <div className="mono" style={{ marginTop: "0.15rem" }}>{d.commitSha}</div>
-                  </td>
-                  <td style={{ color: "var(--text-secondary)" }}>{d.project}</td>
-                  <td>
-                    <span className={`badge ${envClass[d.env] ?? "badge-default"}`}>{d.env}</span>
-                  </td>
-                  <td>
-                    <span className={`badge ${statusClass[d.status]}`}>
-                      <span className={`dot ${statusDot[d.status]}`} /> {d.status.replace("_", " ")}
-                    </span>
-                  </td>
-                  <td>
-                    <span className="avatar-group">
-                      <span className="avatar">{d.deployedBy.initials}</span>
-                      {d.deployedBy.name}
-                    </span>
-                  </td>
-                  <td>
-                    {d.url ? (
-                      <a href={d.url} className="external mono" target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.78rem" }}>
-                        ↗ {d.url.replace("https://", "")}
-                      </a>
-                    ) : (
-                      <span style={{ color: "var(--text-secondary)" }}>—</span>
-                    )}
-                  </td>
-                  <td className="mono" style={{ color: "var(--text-secondary)" }}>{d.date}</td>
+          {deployments.length === 0 ? (
+            <p style={{ padding: "2rem", color: "var(--text-secondary)", textAlign: "center" }}>
+              No deployments yet. Run a sync from Vercel to see data here.
+            </p>
+          ) : (
+            <table>
+              <thead>
+                <tr>
+                  <th>Commit</th>
+                  <th>Project</th>
+                  <th>Env</th>
+                  <th>Status</th>
+                  <th>Deployed By</th>
+                  <th>URL</th>
+                  <th>Date</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {deployments.map((d: any) => (
+                  <tr key={d.id}>
+                    <td>
+                      <div style={{ fontWeight: 500, fontSize: "0.82rem" }}>{d.commitMessage || "No message"}</div>
+                      <div className="mono" style={{ marginTop: "0.15rem" }}>{d.commitSha || "—"}</div>
+                    </td>
+                    <td style={{ color: "var(--text-secondary)" }}>{d.pipeline?.project?.name || "Unknown"}</td>
+                    <td>
+                      <span className={`badge ${envClass[d.environment] ?? "badge-default"}`}>{d.environment}</span>
+                    </td>
+                    <td>
+                      <span className={`badge ${statusClass[d.status]}`}>
+                        <span className={`dot ${statusDot[d.status]}`} /> {d.status.replace("_", " ")}
+                      </span>
+                    </td>
+                    <td>
+                      <span className="avatar-group">
+                        <span className="avatar">{d.deployer ? getInitials(d.deployer.name) : "NA"}</span>
+                        {d.deployer?.name || "Unknown"}
+                      </span>
+                    </td>
+                    <td>
+                      {d.url ? (
+                        <a href={d.url} className="external mono" target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.78rem" }}>
+                          ↗ {d.url.replace("https://", "")}
+                        </a>
+                      ) : (
+                        <span style={{ color: "var(--text-secondary)" }}>—</span>
+                      )}
+                    </td>
+                    <td className="mono" style={{ color: "var(--text-secondary)" }}>{timeAgo(d.createdAt)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
     </>

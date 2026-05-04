@@ -6,15 +6,27 @@ export const pipelinesRouter = new Hono();
 // GET /api/pipelines
 pipelinesRouter.get("/", async (c) => {
   const projectId = c.req.query("projectId");
-  const pipelines = await prisma.pipeline.findMany({
-    where: projectId ? { projectId } : undefined,
-    include: {
-      project: { select: { id: true, name: true, slug: true } },
-      _count: { select: { deployments: true } },
-    },
-    orderBy: { createdAt: "desc" },
-  });
-  return c.json({ data: pipelines, total: pipelines.length });
+  const page = parseInt(c.req.query("page") || "1");
+  const limit = parseInt(c.req.query("limit") || "10");
+  const skip = (page - 1) * limit;
+
+  const where = projectId ? { projectId } : undefined;
+
+  const [pipelines, total] = await Promise.all([
+    prisma.pipeline.findMany({
+      where,
+      include: {
+        project: { select: { id: true, name: true, slug: true } },
+        _count: { select: { deployments: true } },
+      },
+      orderBy: { createdAt: "desc" },
+      skip,
+      take: limit,
+    }),
+    prisma.pipeline.count({ where }),
+  ]);
+
+  return c.json({ data: pipelines, total, page, limit, totalPages: Math.ceil(total / limit) });
 });
 
 // GET /api/pipelines/:id
